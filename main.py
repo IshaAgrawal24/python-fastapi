@@ -1,16 +1,21 @@
-from fastapi import FastAPI, Request
-import time
+import sqlite3
+from fastapi import FastAPI
 
 app = FastAPI()
+conn = sqlite3.connect("test.db", check_same_thread=False)
+
+cursor = conn.cursor()
+cursor.execute("""
+               CREATE TABLE IF NOT EXISTS todos(
+                   id INTEGER PRIMARY KEY,
+                   title TEXT,
+                   status TEXT
+               )
+               """)
+
+conn.commit()
 
 
-# LOGGING MIDDLEWARE 
-@app.middleware("http")
-async def log_middleware(request: Request, call_next):
-    start_time = time.time()
-
-    response = await call_next(request)
-
-    process_time  = time.time() - start_time
-    print(f"request path: {request.url.path} | Process TIme: {process_time}")
-    return response
+@app.get("/")
+def home():
+    return {"message": "DB connected successfully!"}
