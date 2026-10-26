@@ -1,22 +1,16 @@
-from fastapi import FastAPI, Header, Depends, HTTPException
+from fastapi import FastAPI, Request
+import time
 
 app = FastAPI()
 
-#  TO CHECK WETHER THE TOKEN IS AUTHORISED OR NOT.........  T
-def varify_token(token: str):
-    if token != "MySecretToken":
-        raise HTTPException(
-            status_code=401,
-            detail="Unauthorised token"
-        )
-    return {
-        "user": "Authorized!"
-    }
-    
-@app.get("/config")
-def config(token: str = Depends(varify_token)):
-    return {
-        "status": True,
-        "message": "User verified",
-        "data": token
-    }
+
+# LOGGING MIDDLEWARE 
+@app.middleware("http")
+async def log_middleware(request: Request, call_next):
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    process_time  = time.time() - start_time
+    print(f"request path: {request.url.path} | Process TIme: {process_time}")
+    return response
