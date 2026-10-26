@@ -1,55 +1,25 @@
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Depends
 
 app = FastAPI()
 
-class UserNotFoundException(Exception):
-    def __init__(self, id: int):
-        self.id = id
 
-# GLOBAL EXCEPTION 
-@app.exception_handler(UserNotFoundException)
-def user_not_found_handler(request: Request, exc: UserNotFoundException):
-    return JSONResponse(
-        status_code=404,
-        content={
-            "status": "Error",
-            "message": f"User {exc.id} not found!"
-        }
-    )
+def get_current_user():
+    return "Isha"
 
 
-# CUSTOM EXCEPTION 
-@app.get("/user/{id}")
-def user_data(id: int):
-    if id != 1:
-        raise UserNotFoundException(id)
+@app.get("/profile")
+def profile(username: str = Depends(get_current_user)):
     return {
         "status": True,
-        "message": "Data fetched successfully",
-        "data": [{
-            "id": 1,
-            "name": "Isha"
-        }]
+        "message": "Data fetched successfully!",
+        "data": {"id": 1, "username": username},
     }
-    
-    
-    
-    
-    
-# HTTPException is a built in error handling function................
-   
-# @app.get("/user/{id}")
-# def user_data(id: int):
-#     if id != 1:
-#         raise HTTPException(
-#             status_code= 404,
-#             detail= "User not found" 
-#         )
-#     return {
-#         "status": 200,
-#         "data": {
-#             "id": 1,
-#             "name": "Isha"
-#         }
-#     }    
+
+
+@app.get("/dashboard")
+def dashboard(username: str = Depends(get_current_user)):
+    return {
+        "status": True,
+        "message": "Data fetched successfully!",
+        "config": {"id": 1, "username": username},
+    }
