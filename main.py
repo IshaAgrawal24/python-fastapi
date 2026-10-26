@@ -1,25 +1,22 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Header, Depends, HTTPException
 
 app = FastAPI()
 
-
-def get_current_user():
-    return "Isha"
-
-
-@app.get("/profile")
-def profile(username: str = Depends(get_current_user)):
+#  TO CHECK WETHER THE TOKEN IS AUTHORISED OR NOT.........  T
+def varify_token(token: str):
+    if token != "MySecretToken":
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorised token"
+        )
     return {
-        "status": True,
-        "message": "Data fetched successfully!",
-        "data": {"id": 1, "username": username},
+        "user": "Authorized!"
     }
-
-
-@app.get("/dashboard")
-def dashboard(username: str = Depends(get_current_user)):
+    
+@app.get("/config")
+def config(token: str = Depends(varify_token)):
     return {
         "status": True,
-        "message": "Data fetched successfully!",
-        "config": {"id": 1, "username": username},
+        "message": "User verified",
+        "data": token
     }
