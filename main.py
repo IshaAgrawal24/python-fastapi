@@ -1,35 +1,55 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-# STATUS CODE 
-@app.post("/create_user", status_code=status.HTTP_201_CREATED)
-def create_user():
-    return {
-        "message": "User created!"
-    }
-    
-# CUSTOM RESPONSE 
-@app.get("/user_list")
-def user_list():
-    return {
-        "status": "Success",
-        "message": "Data fetched",
-        "data": {
-            "name": "Isha",
-            "age": 26
+class UserNotFoundException(Exception):
+    def __init__(self, id: int):
+        self.id = id
+
+# GLOBAL EXCEPTION 
+@app.exception_handler(UserNotFoundException)
+def user_not_found_handler(request: Request, exc: UserNotFoundException):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "status": "Error",
+            "message": f"User {exc.id} not found!"
         }
+    )
+
+
+# CUSTOM EXCEPTION 
+@app.get("/user/{id}")
+def user_data(id: int):
+    if id != 1:
+        raise UserNotFoundException(id)
+    return {
+        "status": True,
+        "message": "Data fetched successfully",
+        "data": [{
+            "id": 1,
+            "name": "Isha"
+        }]
     }
     
-# ERROR HANDLING BASICS 
-@app.get("/user/{id}")
-def user(id: int):
-    if id != 1:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
-    return {
-        "id": 1,
-        "name": "Mohit"
-    }
+    
+    
+    
+    
+# HTTPException is a built in error handling function................
+   
+# @app.get("/user/{id}")
+# def user_data(id: int):
+#     if id != 1:
+#         raise HTTPException(
+#             status_code= 404,
+#             detail= "User not found" 
+#         )
+#     return {
+#         "status": 200,
+#         "data": {
+#             "id": 1,
+#             "name": "Isha"
+#         }
+#     }    
