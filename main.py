@@ -1,75 +1,35 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import Literal
+from fastapi import FastAPI, status, HTTPException
 
 app = FastAPI()
 
-class Todo(BaseModel):
-    id: int
-    title: str
-    status: Literal["Completed" , "Pending" , "In Process"]
-    
-class TodoUpdate(BaseModel):
-    title: str
-    status: Literal["Completed" , "Pending" , "In Process"]
-    
-todos: Todo = []
-
-# TODO - LIST 
-@app.get("/todo-list")
-def todo_list():
+# STATUS CODE 
+@app.post("/create_user", status_code=status.HTTP_201_CREATED)
+def create_user():
     return {
-        "return_status": 200,
-        "message": "Data fetched successfully!",
-        "data": todos
+        "message": "User created!"
     }
     
-# FILTER THE TODO LIST 
-@app.get("/todo/{id}")
-def find_todo(id: int):
-    for task in todos:
-        if task.id == id:
-            return {
-                "return_status": 200,
-                "message": "Data fetched successfully!",
-                "data": task
-            }
-    return {"error": "ID not found"}        
-
-# CREATE A TODO TASK
-@app.post("/create-todo")
-def ceate_todo(todo: Todo):
-    todos.append(todo)
+# CUSTOM RESPONSE 
+@app.get("/user_list")
+def user_list():
     return {
-        "return_status": 201,
-        "message": "Data created successfully!",
-        "data": todo
+        "status": "Success",
+        "message": "Data fetched",
+        "data": {
+            "name": "Isha",
+            "age": 26
+        }
     }
     
-# EDIT THE TODO TASK 
-@app.put("/edit-todo/{id}")
-def edit_todo(id: int, updated_task: TodoUpdate):
-    for index, task in enumerate(todos):
-        if task.id == id:
-            task.title = updated_task.title
-            task.status = updated_task.status
-            return {
-                "return_status": 200,
-                "message": "Data updated successfully!",
-                "data": task
-            }
-    return {"error": "ID not found"}    
-
-# DELETE A TODO TASK 
-@app.delete("/remove-todo/{id}")
-def remove_todo(id: int):
-    for index, task in enumerate(todos):
-        if task.id == id:
-            deleted_task = todos.pop(index)
-            return {
-                "return_status": 200,
-                "message": "Data deleted successfully!",
-                "data": deleted_task
-            } 
-    return {"error": "ID not found"}   
-
+# ERROR HANDLING BASICS 
+@app.get("/user/{id}")
+def user(id: int):
+    if id != 1:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+    return {
+        "id": 1,
+        "name": "Mohit"
+    }
